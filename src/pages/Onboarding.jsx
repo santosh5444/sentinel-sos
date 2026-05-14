@@ -140,7 +140,7 @@ export default function Onboarding() {
               {facilityType === 'Hotel' ? 'Hotel Guest' : 'Patient / Visitor'}
             </h3>
             <p className="text-text-secondary">
-              {facilityType === 'Hotel' ? 'I am staying at this hotel.' : 'I am receiving care or visiting this facility.'}
+              {facilityType === 'Hotel' ? 'I am staying at this hotel.' : 'I am a visitor or resident at this facility.'}
             </p>
           </motion.div>
           <motion.div 
@@ -154,7 +154,7 @@ export default function Onboarding() {
               {facilityType === 'Hotel' ? 'Hotel Staff' : 'Medical Staff'}
             </h3>
             <p className="text-text-secondary">
-              {facilityType === 'Hotel' ? 'I work here and assist guests.' : 'I work here and respond to medical requests & emergencies.'}
+              {facilityType === 'Hotel' ? 'I work here and assist guests.' : 'I work here and respond to facility emergencies.'}
             </p>
           </motion.div>
         </div>

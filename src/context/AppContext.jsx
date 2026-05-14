@@ -4,15 +4,15 @@ const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = sessionStorage.getItem('crisisSyncUser');
+    const saved = sessionStorage.getItem('sentinelUser');
     return saved ? JSON.parse(saved) : null;
   });
 
   useEffect(() => {
     if (user) {
-      sessionStorage.setItem('crisisSyncUser', JSON.stringify(user));
+      sessionStorage.setItem('sentinelUser', JSON.stringify(user));
     } else {
-      sessionStorage.removeItem('crisisSyncUser');
+      sessionStorage.removeItem('sentinelUser');
     }
   }, [user]);
 

@@ -69,7 +69,7 @@ export default function LandingPage() {
       {/* How it Works */}
       <section className="py-24 px-4 bg-card-bg border-y border-card-border">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-16">How CrisisSync Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-16">How SENTINEL Works</h2>
           <div className="flex flex-col md:flex-row gap-8 justify-between relative">
             <div className="flex-1 text-center relative z-10">
               <div className="w-20 h-20 bg-dark-bg border-2 border-primary-red rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">1</div>
