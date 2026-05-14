@@ -7,8 +7,9 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Users, HardHat, BarChart3, PhoneCall, 
-  LogOut, AlertTriangle, CheckCircle, Clock, MapPin, Phone, Bell, QrCode, Search 
+  LogOut, AlertTriangle, CheckCircle, Clock, MapPin, Phone, Bell, QrCode, Search, FileText 
 } from 'lucide-react';
+import { generateIncidentReport } from '../services/reportGenerator';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
 import { logoutAdmin } from '../firebase/auth';
@@ -178,6 +179,7 @@ export default function AdminDashboard() {
     { id: 'GUESTS', label: 'Guests', icon: Users },
     { id: 'STAFF', label: 'Staff', icon: HardHat },
     { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
+    { id: 'PERFORMANCE', label: 'Staff Performance', icon: Users },
     { id: 'EMERGENCY', label: 'Dispatch', icon: PhoneCall },
     { id: 'LOST_FOUND', label: 'Lost & Found', icon: Search },
     { id: 'QR_CODE', label: 'Venue QR', icon: QrCode },
@@ -320,6 +322,21 @@ export default function AdminDashboard() {
                         <button onClick={() => handleResolve(crisis.sosId)} className="px-4 py-2 bg-success hover:bg-green-600 text-white rounded font-bold text-sm transition">Mark Resolved</button>
                       </div>
                     </div>
+
+                    {/* Sentinel Enterprise: History / Report Section */}
+                    {crisis.status === 'RESOLVED' && (
+                      <div className="p-4 bg-dark-bg/50 flex justify-between items-center border-t border-card-border">
+                        <div className="flex items-center gap-2 text-success font-bold text-xs uppercase tracking-widest">
+                          <CheckCircle size={14} /> Resolved Successfully
+                        </div>
+                        <button 
+                          onClick={() => generateIncidentReport(crisis)}
+                          className="text-info hover:text-white flex items-center gap-2 text-sm font-bold bg-info/10 px-4 py-2 rounded-lg border border-info/20 hover:border-info transition"
+                        >
+                          <FileText size={16} /> Download Sentinel Report
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </div>
@@ -414,16 +431,16 @@ export default function AdminDashboard() {
         {/* TAB 4: ANALYTICS */}
         {activeTab === 'ANALYTICS' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold mb-4">System Analytics</h2>
+            <h2 className="text-2xl font-bold mb-4 font-orbitron tracking-wider text-primary-red">System Analytics</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-card-bg p-6 rounded-xl border border-card-border h-80">
-                <h3 className="font-bold mb-4 text-text-secondary">Network Registrations (Mock)</h3>
+                <h3 className="font-bold mb-4 text-text-secondary">Network Registrations</h3>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={[{name: 'Guests', count: guests.length}, {name: 'Staff', count: staff.length}]}>
                     <XAxis dataKey="name" stroke="#9E9E9E"/>
                     <YAxis stroke="#9E9E9E"/>
                     <RechartsTooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{backgroundColor: '#1A1A1A', borderColor: '#2D2D2D'}}/>
-                    <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="#EF4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -435,14 +452,92 @@ export default function AdminDashboard() {
                       Object.entries(crises.reduce((acc, c) => { acc[c.type] = (acc[c.type] || 0) + 1; return acc; }, {}))
                         .map(([name, value]) => ({name, value}))
                     } dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                      <Cell fill="#FF5252" />
-                      <Cell fill="#FFC107" />
-                      <Cell fill="#2196F3" />
-                      <Cell fill="#4CAF50" />
+                      <Cell fill="#EF4444" />
+                      <Cell fill="#F59E0B" />
+                      <Cell fill="#3B82F6" />
+                      <Cell fill="#10B981" />
                     </Pie>
                     <RechartsTooltip contentStyle={{backgroundColor: '#1A1A1A', borderColor: '#2D2D2D'}}/>
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 8: PERFORMANCE */}
+        {activeTab === 'PERFORMANCE' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold mb-4 font-orbitron tracking-wider text-primary-red">Staff Performance & Response Times</h2>
+            
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Leaderboard */}
+              <div className="lg:col-span-2 bg-card-bg border border-card-border rounded-2xl overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-card-border bg-black/20">
+                  <h3 className="font-bold flex items-center gap-2"><Users className="text-primary-red" /> Responder Leaderboard</h3>
+                </div>
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-dark-bg text-text-secondary">
+                    <tr>
+                      <th className="p-4">Rank</th>
+                      <th className="p-4">Staff Member</th>
+                      <th className="p-4">Resolutions</th>
+                      <th className="p-4">Avg. Response</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-card-border">
+                    {Object.values(crises.reduce((acc, c) => {
+                      if (!c.acceptedBy) return acc;
+                      const sId = c.acceptedBy.userId || c.acceptedBy.name;
+                      if (!acc[sId]) acc[sId] = { name: c.acceptedBy.name, role: c.acceptedBy.profession, count: 0, totalResponseTime: 0 };
+                      acc[sId].count += 1;
+                      if (c.acceptedTimestamp) {
+                        acc[sId].totalResponseTime += (c.acceptedTimestamp - c.timestamp);
+                      }
+                      return acc;
+                    }, {}))
+                    .sort((a, b) => b.count - a.count)
+                    .map((s, idx) => (
+                      <tr key={idx} className="hover:bg-dark-bg/50 transition">
+                        <td className="p-4 font-black text-primary-red">#{idx + 1}</td>
+                        <td className="p-4">
+                          <p className="font-bold">{s.name}</p>
+                          <p className="text-xs text-text-secondary">{s.role}</p>
+                        </td>
+                        <td className="p-4">
+                          <span className="bg-success/20 text-success px-2 py-1 rounded font-bold">{s.count} Fixed</span>
+                        </td>
+                        <td className="p-4 font-mono">
+                          {s.count > 0 ? `${Math.floor(s.totalResponseTime / s.count / 1000)}s` : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                    {crises.filter(c => c.acceptedBy).length === 0 && (
+                      <tr><td colSpan="4" className="p-12 text-center text-text-secondary">No response data recorded yet.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Fast Stats */}
+              <div className="flex flex-col gap-6">
+                <div className="bg-card-bg p-6 rounded-2xl border border-card-border text-center shadow-lg">
+                  <p className="text-sm text-text-secondary mb-2 uppercase tracking-widest font-bold">Average Response</p>
+                  <h3 className="text-5xl font-black text-info">
+                    {crises.filter(c => c.acceptedTimestamp).length > 0 
+                      ? `${Math.floor(crises.filter(c => c.acceptedTimestamp).reduce((acc, c) => acc + (c.acceptedTimestamp - c.timestamp), 0) / crises.filter(c => c.acceptedTimestamp).length / 1000)}s`
+                      : '0s'}
+                  </h3>
+                  <p className="text-xs text-text-secondary mt-2">Target: &lt; 60 seconds</p>
+                </div>
+                
+                <div className="bg-card-bg p-6 rounded-2xl border border-card-border text-center shadow-lg">
+                  <p className="text-sm text-text-secondary mb-2 uppercase tracking-widest font-bold">Resolution Rate</p>
+                  <h3 className="text-5xl font-black text-success">
+                    {crises.length > 0 ? `${Math.floor((crises.filter(c => c.status === 'RESOLVED').length / crises.length) * 100)}%` : '0%'}
+                  </h3>
+                  <p className="text-xs text-text-secondary mt-2">All SOS resolved successfully</p>
+                </div>
               </div>
             </div>
           </div>
