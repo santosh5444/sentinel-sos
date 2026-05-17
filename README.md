@@ -1,10 +1,10 @@
 # SENTINEL: Multi-Facility Crisis Response Platform
 
-A powerful crisis management solution designed specifically for **Hospitals** and **Medical Centers**. CrisisSync provides real-time SOS tracking, medical staff coordination, and patient assistance in high-pressure environments.
+A powerful crisis management solution designed specifically for **Hospitals** and **Hotels**. CrisisSync provides real-time SOS tracking, medical staff coordination, and patient assistance in high-pressure environments.
 
 ## 🚀 Key Features
-- **Real-Time SOS Dashboard:** Secure command center for hospital administrators to track, verify, and resolve medical emergencies instantly.
-- **Staff Dispatch:** Smart assignment of tasks based on floor assignment and medical profession (Doctors, Nurses, Surgeons, etc.).
+- **Real-Time SOS Dashboard:** Secure command center for hospital administrators to track, verify, and resolve medical and hotel emergencies instantly.
+- **Staff Dispatch:** Smart assignment of tasks based on floor assignment and medical profession (Doctors, Nurses, Surgeons, etc.) and hotel staff.
 - **Lost & Found AI:** Internal tracking for patient belongings using smart metadata and real-time feeds.
 - **QR Entry System:** Frictionless onboarding for patients, visitors, and medical staff via facility-specific QR codes.
 - **Secure Auth:** Multi-tenant administrative control via Firebase Authentication.
